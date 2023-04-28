@@ -1,5 +1,6 @@
 import { sequelize, BaseModel, DataTypes } from '../config/database'
 import Article from './article'
+import Comment from "./comment";
 
 class User extends BaseModel {}
 
@@ -41,5 +42,8 @@ User.init(
 
 User.hasMany(Article)
 Article.belongsTo(User)
+
+User.hasMany(Comment)
+Comment.belongsTo(User)
 
 export default User

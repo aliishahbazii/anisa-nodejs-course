@@ -1,15 +1,67 @@
 <%- include("../layouts/main-top.js") %>
 
 <div class="article-full">
-  <div class="image">
-    <img src="/<%= article.image %>" />
-  </div>
+    <% if(article.image) { %>
+        <div class="image">
+            <img src="/<%= article.image %>"/>
+        </div>
+    <% } %>
 
-  <p><%= article.text %></p>
+    <p class="article-text"><%= article.text %></p>
+
+    <% if(comments.length) { %>
+        <h4 class="comment-section-header">Comments</h4>
+        <div class="comment-block">
+            <% for (const comment of comments) { %>
+                <p>
+
+                    <% if (comment.removable) { %>
+
+                <form action="/comment/<%= comment.id %>" class="action-form" method="POST">
+                    <input type="hidden" name="_method" value="DELETE"/>
+                    <button class="action inline" type="submit">Delete</button>
+                </form>
+
+                <% } %>
+                ---
+
+                <% if (!comment.rate) { %> &star;<% } %>
+
+                <% for (var i = 0; i < comment.rate;i++) { %> &bigstar; <% } %>
+                ---
+                <%= comment.user.username %>
+                ---
+                <%= comment.createdAt %>
+                <br>
+                <span class="comment-text"> <%= comment.text %> </span>
+                </p>
+            <% } %>
+        </div>
+    <% } %>
+    <h4 class="comment-section-header">Add new comment</h4>
+    <div class="create-comment">
+        <form action="/comment" method="POST">
+            <div class="form-item">
+                <label for="rate">rate</label>
+                <input type="range" min="0" max="5" name="rate"/>
+            </div>
+            <div class="form-item">
+                <label for="text">text</label>
+                <textarea type="text" name="text" minlength="4" maxlength="400"></textarea>
+            </div>
+            <input type="hidden" name="articleId" value="<%= article.id %>"/>
+            <div class="form-item">
+                <button type="submit">add</button>
+            </div>
+        </form>
+
+    </div>
+
+
 </div>
 
 <div>
-  <a class="action" href="/article">Back to list</a>
+    <a class="action" href="/article">Back to list</a>
 </div>
 
 <%- include("../layouts/main-bottom.js") %>
