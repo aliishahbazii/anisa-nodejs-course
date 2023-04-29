@@ -8,6 +8,8 @@ const router = express.Router()
 
 router.post('/', acl('USER'), validate(schema), CommentController.add)
 router.delete('/:id(\\d+)',acl('USER'), CommentController.remove)
+router.get('/:id(\\d+)', acl('USER'), CommentController.get)
+
 
 
 export default router

@@ -1,7 +1,8 @@
 import log from "../utils/logger";
 import Comment from '../models/comment'
 import Article from "../models/article";
-import {NotFoundError} from "../utils/errors";
+import {ForbiddenError, NotFoundError} from "../utils/errors";
+import {ROLE_HIERARCHY} from "../config/roles";
 
 class CommentController {
     async add(req, res) {
@@ -17,7 +18,6 @@ class CommentController {
         if (!article) {
             throw new NotFoundError('Article not found')
         }
-        console.log("article is ====== " + article)
 
         const comment = new Comment({text, rate, articleId: articleId, userId: req.user.id})
         await comment.save()
@@ -39,6 +39,16 @@ class CommentController {
         if (!comment) {
             throw new NotFoundError('Comment not found')
         }
+
+        //if loggedInUser is owner of comment or admin then he can remove the comment
+
+
+        const {role} = req.user
+
+        if (role === "ADMIN" || ROLE_HIERARCHY[role]?.includes("ADMIN") || comment.userId === req.user.id) {
+            throw new ForbiddenError('Invalid Access')
+        }
+
 
         await comment.remove()
 

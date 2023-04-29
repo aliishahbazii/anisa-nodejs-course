@@ -1,86 +1,97 @@
-import { BadRequestError, NotFoundError } from '../../utils/errors'
+import {NotFoundError} from '../../utils/errors'
 import Article from '../../models/article'
 import log from '../../utils/logger'
+import Comment from "../../models/comment";
+import {Op} from "sequelize";
 
 class ArticleController {
-  async list (req, res) {
-    const data = await Article.findPaginate(req.query.page, {
-      include: ['user']
-    })
+    async list(req, res) {
+        const data = await Article.findPaginate(req.query.page, {
+            include: ['user']
+        })
 
-    res.json(data)
-  }
-
-  async get (req, res) {
-    const { id } = req.params
-
-    const article = await Article.find(+id, { include: ['user'] })
-
-    if (!article) {
-      throw new NotFoundError('Article not found')
+        res.json(data)
     }
 
-    res.json(article)
-  }
+    async get(req, res) {
+        const {id} = req.params
 
-  async add (req, res) {
-    const { title, text, image } = req.body
+        const article = await Article.find(+id, {include: ['user']})
 
-    const article = new Article({ title, text, image, userId: req.user.id })
+        if (!article) {
+            throw new NotFoundError('Article not found')
+        }
 
-    await article.save()
-
-    log({
-      message: 'article:create',
-      metadata: { article: article.dataValues, user: req.user.dataValues }
-    })
-
-    res.json(article)
-  }
-
-  async update (req, res) {
-    const { id } = req.params
-
-    const { title, text, image } = req.body
-
-    const article = await Article.find(+id)
-
-    if (!article) {
-      throw new NotFoundError('Article not found')
+        res.json(article)
     }
 
-    article.title = title
-    article.text = text
-    article.image = image
+    async add(req, res) {
+        const {title, text, image} = req.body
 
-    await article.save()
+        const article = new Article({title, text, image, userId: req.user.id})
 
-    log({
-      message: 'article:update',
-      metadata: { article: article.dataValues, user: req.user.dataValues }
-    })
+        await article.save()
 
-    res.json(article)
-  }
+        log({
+            message: 'article:create',
+            metadata: {article: article.dataValues, user: req.user.dataValues}
+        })
 
-  async remove (req, res) {
-    const { id } = req.params
-
-    const article = await Article.find(+id)
-
-    if (!article) {
-      throw new NotFoundError('Article not found')
+        res.json(article)
     }
 
-    await article.remove()
+    async update(req, res) {
+        const {id} = req.params
 
-    log({
-      message: 'article:remove',
-      metadata: { article: article.dataValues, user: req.user.dataValues }
-    })
+        const {title, text, image} = req.body
 
-    res.json(article)
-  }
+        const article = await Article.find(+id)
+
+        if (!article) {
+            throw new NotFoundError('Article not found')
+        }
+
+        article.title = title
+        article.text = text
+        article.image = image
+
+        await article.save()
+
+        log({
+            message: 'article:update',
+            metadata: {article: article.dataValues, user: req.user.dataValues}
+        })
+
+        res.json(article)
+    }
+
+    async remove(req, res) {
+        const {id} = req.params
+
+        const article = await Article.find(+id)
+
+        if (!article) {
+            throw new NotFoundError('Article not found')
+        }
+
+        const comments = await Comment.findAll({
+            where: {articleId: {[Op.eq]: article.id}}
+        })
+
+        for (const comment of comments) {
+            await comment.remove()
+        }
+
+        await article.remove()
+
+
+        log({
+            message: 'article:remove',
+            metadata: {article: article.dataValues, user: req.user.dataValues}
+        })
+
+        res.json(article)
+    }
 }
 
 export default new ArticleController()
