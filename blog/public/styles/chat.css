@@ -87,3 +87,8 @@
 .message-form button {
   flex: 0 0 10%;
 }
+
+#message-wrapper{
+  overflow-y: scroll;
+    height: 300px;
+}

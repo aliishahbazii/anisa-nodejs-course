@@ -5,6 +5,7 @@ import file from './file'
 import person from './person'
 import message from './message'
 import comment from './comment'
+import groupMessage from "./groupMessage";
 
 const router = express.Router()
 
@@ -12,6 +13,7 @@ router.use('/admin', admin)
 router.use('/file', file)
 router.use('/person', person)
 router.use('/message', message)
+router.use('/groupMessage',groupMessage)
 router.use('/', auth)
 router.use('/comment',comment)
 
